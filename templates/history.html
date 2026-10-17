@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}My History - Smart Waste Classifier{% endblock %}
+{% block content %}
+<h2 class="h4 mb-1">My History</h2>
+<p class="text-secondary">Your last {{ rows|length }} classification{{ '' if rows|length == 1 else 's' }} (times in UTC).</p>
+
+<div class="eco-card p-4 table-responsive">
+  {% if rows %}
+  <table class="table table-borderless eco-table align-middle mb-0">
+    <thead>
+      <tr><th>When</th><th>Image</th><th>Material</th><th>Wet/Dry</th><th>Texture</th><th>Bio</th><th>Result</th><th>Confidence</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="text-secondary">{{ r['created_at'] }}</td>
+        <td>
+          {% if r['image_filename'] %}
+          <img src="{{ url_for('static', filename='uploads/' + r['image_filename']) }}" 
+               alt="Waste" 
+               style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+               onclick="window.open(this.src, '_blank')">
+          {% else %}
+          <span class="text-muted small">-</span>
+          {% endif %}
+        </td>
+        <td>{{ r['material_type']|capitalize }}</td>
+        <td>{{ r['wet_or_dry']|capitalize }}</td>
+        <td>{{ r['texture']|capitalize }}</td>
+        <td>{{ r['biodegradable']|capitalize }}</td>
+        <td>
+          {% set g_ = guides.get(r['final_category']) %}
+          <span class="pill" style="background: {{ g_.color if g_ else '#475569' }}; color: {{ g_.ink if g_ else '#fff' }};">{{ g_.icon if g_ }} {{ r['final_category'] }}</span>
+        </td>
+        <td>
+          {% if r['confidence'] %}
+          <span class="badge {% if r['is_uncertain'] %}bg-warning text-dark{% else %}bg-success{% endif %}">
+            {{ r['confidence'] }}%{% if r['is_uncertain'] %} ⚠️{% endif %}
+          </span>
+          {% else %}
+          <span class="text-muted small">-</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="mb-3">No predictions yet.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-eco">Classify your first item</a>
+  {% endif %}
+</div>
+{% endblock %}

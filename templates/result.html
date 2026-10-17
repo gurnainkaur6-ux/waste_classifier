@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Result - Smart Waste Classifier{% endblock %}
+{% block content %}
+{% set active = 4 %}
+{% include "_steps.html" %}
+
+{# Final prediction with confidence score #}
+<div class="eco-card p-4 mb-4 text-center" style="border-color: {{ guide.color }};">
+  <div class="display-3">{{ guide.icon }}</div>
+  <div class="text-secondary text-uppercase small">
+    Final prediction (majority vote: {{ votes }}/{{ total }} models agree)
+    <br>
+    <span class="badge {% if is_uncertain %}bg-warning{% else %}bg-success{% endif %} mt-2">
+      Confidence: {{ confidence }}%
+      {% if is_uncertain %}⚠️ Low Confidence{% endif %}
+    </span>
+  </div>
+  <h2 class="display-6 fw-bold">{{ final }}</h2>
+  <span class="bin-badge" style="background: {{ guide.color }}; color: {{ guide.ink }};">{{ guide.bin }}</span>
+  <p class="mt-3 mb-0 text-secondary">{{ guide.summary }}</p>
+  
+  {# Display uploaded image if available #}
+  {% if image_filename %}
+  <div class="mt-3">
+    <p class="text-secondary small mb-2">📸 Your uploaded image:</p>
+    <img src="{{ url_for('static', filename='uploads/' + image_filename) }}" 
+         alt="Uploaded waste" 
+         style="max-width: 300px; max-height: 300px; border-radius: 8px; border: 2px solid {{ guide.color }};">
+  </div>
+  {% endif %}
+  
+  {# Uncertainty warning #}
+  {% if is_uncertain %}
+  <div class="alert alert-warning mt-3 mb-0">
+    <strong>⚠️ Low confidence prediction</strong><br>
+    The models are not very certain about this classification. Please verify the result and provide feedback below.
+  </div>
+  {% endif %}
+  
+  {# Suspicious input warning #}
+  {% if is_suspicious %}
+  <div class="alert alert-info mt-3 mb-0">
+    <strong>ℹ️ Unusual input combination detected</strong>
+    <ul class="mb-0 mt-2 text-start">
+      {% for warning in warnings %}
+      <li>{{ warning }}</li>
+      {% endfor %}
+    </ul>
+    <small>Please verify your inputs are correct, or provide feedback if the prediction is wrong.</small>
+  </div>
+  {% endif %}
+</div>
+
+{# Feedback section #}
+<div class="eco-card p-4 mb-4">
+  <h3 class="h6 text-uppercase text-secondary mb-3">Was this prediction correct?</h3>
+  <div id="feedback-form" data-prediction-id="{{ prediction_id }}">
+    <div class="btn-group mb-3" role="group">
+      <button type="button" class="btn btn-outline-success" onclick="submitFeedback(1)">
+        ✅ Yes, Correct
+      </button>
+      <button type="button" class="btn btn-outline-danger" onclick="submitFeedback(0)">
+        ❌ No, Incorrect
+      </button>
+    </div>
+    <div id="incorrect-options" style="display: none;">
+      <label class="form-label small">What should the correct category be?</label>
+      <select class="form-select mb-2" id="actual-category">
+        <option value="">Select correct category...</option>
+        {% for cat in guides.keys() %}
+        <option value="{{ cat }}">{{ cat }}</option>
+        {% endfor %}
+      </select>
+      <label class="form-label small">Additional comments (optional):</label>
+      <textarea class="form-control mb-2" id="feedback-comment" rows="2" maxlength="500" 
+                placeholder="Any additional details..."></textarea>
+      <button class="btn btn-sm btn-primary" onclick="sendFeedback()">Submit Feedback</button>
+    </div>
+    <div id="feedback-message" class="alert" style="display: none;"></div>
+  </div>
+</div>
+
+<div class="row g-4">
+  {# Input summary + model predictions #}
+  <div class="col-lg-5">
+    <div class="eco-card p-4 mb-4">
+      <h3 class="h6 text-uppercase text-secondary">Your input</h3>
+      <ul class="list-unstyled mb-0">
+        {% for k, v in inputs.items() %}
+          <li class="d-flex justify-content-between py-1 border-bottom eco-divider">
+            <span class="text-secondary">{{ k.replace('_', ' ')|capitalize }}</span>
+            <strong>{{ v|capitalize }}</strong>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="eco-card p-4">
+      <h3 class="h6 text-uppercase text-secondary">Each model's prediction</h3>
+      {% for name, pred in predictions.items() %}
+        <div class="model-row">
+          <span>{{ name }}</span>
+          <span class="pill" style="background: {{ guides[pred].color }}; color: {{ guides[pred].ink }};">{{ guides[pred].icon }} {{ pred }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Disposal guidance #}
+  <div class="col-lg-7">
+    <div class="eco-card p-4 h-100">
+      <h3 class="h5 mb-3">Disposal Guidance</h3>
+      <div class="bin-visual mb-3" style="--bin: {{ guide.color }}; --bin-ink: {{ guide.ink }};">
+        <div class="bin-lid"></div>
+        <div class="bin-body">{{ guide.bin }}</div>
+      </div>
+
+      <h4 class="h6 text-do">✅ Do</h4>
+      <ul>{% for d in guide.dos %}<li>{{ d }}</li>{% endfor %}</ul>
+
+      <h4 class="h6 text-dont">❌ Don't</h4>
+      <ul>{% for d in guide.donts %}<li>{{ d }}</li>{% endfor %}</ul>
+
+      <div class="tip-box">💡 {{ guide.tip }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="text-center mt-4">
+  <a href="{{ url_for('index') }}" class="btn btn-eco">Classify another item</a>
+  <a href="{{ url_for('history') }}" class="btn btn-outline-eco ms-2">My history</a>
+</div>
+
+<script>
+let feedbackSubmitted = false;
+let feedbackIsCorrect = null;
+
+function submitFeedback(isCorrect) {
+  if (feedbackSubmitted) {
+    showMessage('You have already submitted feedback for this prediction.', 'warning');
+    return;
+  }
+  
+  feedbackIsCorrect = isCorrect;
+  
+  if (isCorrect === 1) {
+    // Correct - submit immediately
+    sendFeedback();
+  } else {
+    // Incorrect - show additional options
+    document.getElementById('incorrect-options').style.display = 'block';
+  }
+}
+
+function sendFeedback() {
+  const predictionId = document.getElementById('feedback-form').dataset.predictionId;
+  const csrfToken = '{{ csrf_token }}';
+  
+  const formData = new FormData();
+  formData.append('csrf_token', csrfToken);
+  formData.append('prediction_id', predictionId);
+  formData.append('is_correct', feedbackIsCorrect);
+  
+  if (feedbackIsCorrect === 0) {
+    const actualCategory = document.getElementById('actual-category').value;
+    const comment = document.getElementById('feedback-comment').value;
+    
+    if (!actualCategory) {
+      showMessage('Please select the correct category.', 'danger');
+      return;
+    }
+    
+    formData.append('actual_category', actualCategory);
+    formData.append('comment', comment);
+  }
+  
+  fetch('{{ url_for("submit_feedback") }}', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      feedbackSubmitted = true;
+      showMessage(data.message, 'success');
+      document.getElementById('feedback-form').querySelectorAll('button').forEach(btn => btn.disabled = true);
+      document.getElementById('incorrect-options').style.display = 'none';
+    } else {
+      showMessage(data.error || 'Failed to submit feedback', 'danger');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showMessage('Network error. Please try again.', 'danger');
+  });
+}
+
+function showMessage(message, type) {
+  const msgDiv = document.getElementById('feedback-message');
+  msgDiv.className = `alert alert-${type}`;
+  msgDiv.textContent = message;
+  msgDiv.style.display = 'block';
+  
+  if (type === 'success') {
+    setTimeout(() => {
+      msgDiv.style.display = 'none';
+    }, 5000);
+  }
+}
+</script>
+{% endblock %}

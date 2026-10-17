@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Sign up - Smart Waste Classifier{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="eco-card p-4">
+      <h2 class="h4 mb-1">Create your account</h2>
+      <p class="text-secondary">Your predictions are saved to your account.</p>
+      <form method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input class="form-control eco-input" id="username" name="username" value="{{ form.username }}"
+                 autocomplete="username" minlength="3" maxlength="30" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input class="form-control eco-input" type="email" id="email" name="email" value="{{ form.email }}"
+                 autocomplete="email" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password <span class="text-secondary small">(min 8 characters)</span></label>
+          <input class="form-control eco-input" type="password" id="password" name="password"
+                 autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="mb-3">
+          <label for="confirm" class="form-label">Confirm password</label>
+          <input class="form-control eco-input" type="password" id="confirm" name="confirm"
+                 autocomplete="new-password" minlength="8" required>
+        </div>
+        <button class="btn btn-eco w-100" type="submit">Sign up</button>
+      </form>
+      <p class="text-secondary small mt-3 mb-0">Already registered? <a href="{{ url_for('login') }}" class="eco-link">Log in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
