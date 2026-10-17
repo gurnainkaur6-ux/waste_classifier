@@ -30,8 +30,8 @@ from datetime import datetime
 import joblib
 import numpy as np
 import pandas as pd
-from flask import (Flask, Response, abort, flash, g, jsonify, redirect, 
-                   render_template, request, session, url_for)
+from flask import (Flask, Response, abort, flash, g, jsonify, redirect,
+                    render_template, request, session, url_for)
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -56,6 +56,21 @@ MODEL_DIR = os.path.join(BASE_DIR, "models")
 INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Render / deployment compatibility: some repos store model files at project root,
+# not inside a dedicated models/ directory.
+if not os.path.isdir(MODEL_DIR):
+    root_model_files = [
+        os.path.join(BASE_DIR, "model_comparison.json"),
+        os.path.join(BASE_DIR, "decision_tree.joblib"),
+        os.path.join(BASE_DIR, "random_forest.joblib"),
+        os.path.join(BASE_DIR, "svm.joblib"),
+        os.path.join(BASE_DIR, "naive_bayes.joblib"),
+    ]
+    if any(os.path.exists(path) for path in root_model_files):
+        MODEL_DIR = BASE_DIR
+    else:
+        os.makedirs(MODEL_DIR, exist_ok=True)
 
 # Create upload folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -120,7 +135,7 @@ CATEGORIES = list(DISPOSAL_GUIDE)
 def load_models():
     """Load all trained models with validation."""
     models = {}
-    logger.info("Loading ML models...")
+    logger.info("Loading ML models from %s...", MODEL_DIR)
     for name in MODEL_NAMES:
         path = os.path.join(MODEL_DIR, name.lower().replace(" ", "_") + ".joblib")
         if not os.path.exists(path):
@@ -145,7 +160,7 @@ def validate_models():
         "texture": "smooth",
         "biodegradable": "no"
     }], columns=FEATURES)
-    
+
     for name, model in MODELS.items():
         try:
             pred = model.predict(test_input)
@@ -156,8 +171,14 @@ def validate_models():
             raise
 
 
-with open(os.path.join(MODEL_DIR, "model_comparison.json")) as _f:
-    METRICS = json.load(_f)
+model_comparison_path = os.path.join(MODEL_DIR, "model_comparison.json")
+if os.path.exists(model_comparison_path):
+    with open(model_comparison_path) as _f:
+        METRICS = json.load(_f)
+else:
+    logger.warning("Model comparison metadata not found at %s. Starting with empty metrics.", model_comparison_path)
+    METRICS = {}
+
 MODELS = load_models()
 
 # Validate models on startup
@@ -178,19 +199,19 @@ def get_confidence_score(model_predictions_proba):
     """
     # Get the predicted class for each model
     predictions = [pred.argmax() for pred in model_predictions_proba.values()]
-    
+
     # Count agreement
     counter = Counter(predictions)
     most_common_count = counter.most_common(1)[0][1]
     agreement_ratio = most_common_count / len(predictions)
-    
+
     # Get average max probability across models
     avg_max_prob = np.mean([pred.max() for pred in model_predictions_proba.values()])
-    
+
     # Combined confidence: weight both agreement and individual model confidence
     confidence = (agreement_ratio * 0.6) + (avg_max_prob * 0.4)
     is_uncertain = confidence < CONFIDENCE_THRESHOLD
-    
+
     return round(confidence * 100, 2), is_uncertain
 
 
@@ -201,7 +222,7 @@ def majority_vote(predictions):
     tied = [label for label, c in counts.items() if c == top]
     if len(tied) == 1:
         return tied[0], top
-    best = max(predictions, key=lambda m: METRICS[m]["accuracy"] if predictions[m] in tied else -1)
+    best = max(predictions, key=lambda m: METRICS.get(m, {}).get("accuracy", 0) if predictions[m] in tied else -1)
     return predictions[best], top
 
 
@@ -211,23 +232,23 @@ def detect_suspicious_input(values):
     Returns: (is_suspicious, warning_message)
     """
     warnings = []
-    
+
     # Food that's non-biodegradable is suspicious
     if values["material_type"] in ["food", "vegetable"] and values["biodegradable"] == "no":
         warnings.append("⚠️ Food/vegetable waste is typically biodegradable.")
-    
+
     # Hard + wet combination is unusual
     if values["texture"] == "hard" and values["wet_or_dry"] == "wet":
         warnings.append("⚠️ Hard + wet combination is unusual.")
-    
+
     # E-waste being biodegradable is impossible
     if values["material_type"] == "e-waste" and values["biodegradable"] == "yes":
         warnings.append("⚠️ E-waste cannot be biodegradable.")
-    
+
     # Metal/glass being biodegradable is impossible
     if values["material_type"] in ["metal", "glass"] and values["biodegradable"] == "yes":
         warnings.append("⚠️ Metal/glass cannot be biodegradable.")
-    
+
     return len(warnings) > 0, warnings
 
 
@@ -243,27 +264,27 @@ def validate_and_process_image(filepath, max_size=(1024, 1024)):
     """
     try:
         from PIL import Image
-        
+
         # Open and verify image
         img = Image.open(filepath)
         img.verify()  # Check if it's a valid image
-        
+
         # Re-open after verify (verify() closes the file)
         img = Image.open(filepath)
-        
+
         # Convert RGBA to RGB if needed
         if img.mode == 'RGBA':
             img = img.convert('RGB')
-        
+
         # Resize if too large (saves disk space)
         img.thumbnail(max_size, Image.Resampling.LANCZOS)
-        
+
         # Save optimized version
         img.save(filepath, optimize=True, quality=85)
-        
+
         logger.info(f"Image validated and optimized: {filepath}")
         return True
-        
+
     except Exception as e:
         logger.error(f"Invalid image file: {e}")
         # Delete invalid file
@@ -437,10 +458,10 @@ def predict():
             unique_id = uuid.uuid4().hex[:8]
             filename = f"{g.user['id']}_{timestamp}_{unique_id}_{original_filename}"
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
+
             # Save temporarily
             file.save(filepath)
-            
+
             # Validate and optimize image
             if validate_and_process_image(filepath):
                 image_filename = filename
@@ -449,7 +470,7 @@ def predict():
                 flash("Invalid image file. Please upload a valid image.", "danger")
                 return render_template("index.html", options=OPTIONS, error="Invalid image file",
                                      selected=request.form, supports_image=True), 400
-    
+
     values, error = validate(request.form)
     if error:
         return render_template("index.html", options=OPTIONS, error=error,
@@ -459,15 +480,15 @@ def predict():
     is_suspicious, warnings = detect_suspicious_input(values)
 
     row = pd.DataFrame([values], columns=FEATURES)
-    
+
     # Get predictions with probabilities
     predictions = {}
     predictions_proba = {}
-    
+
     for name, model in MODELS.items():
         pred = str(model.predict(row)[0])
         predictions[name] = pred
-        
+
         # Get probability distribution
         try:
             proba = model.predict_proba(row)[0]
@@ -475,9 +496,9 @@ def predict():
         except AttributeError:
             # Some models might not support predict_proba
             logger.warning(f"{name} does not support predict_proba")
-            predictions_proba[name] = np.array([1.0 if predictions[name] == cat else 0.0 
-                                                 for cat in CATEGORIES])
-    
+            predictions_proba[name] = np.array([1.0 if predictions[name] == cat else 0.0
+                                              for cat in CATEGORIES])
+
     final, votes = majority_vote(predictions)
     confidence, is_uncertain = get_confidence_score(predictions_proba)
 
@@ -495,12 +516,12 @@ def predict():
     )
     prediction_id = cursor.lastrowid
     conn.commit()
-    
+
     logger.info(f"Prediction {prediction_id} by user {g.user['username']}: {final} (confidence: {confidence}%)")
 
     return render_template(
         "result.html", inputs=values, predictions=predictions, final=final,
-        votes=votes, total=len(predictions), guide=DISPOSAL_GUIDE[final], 
+        votes=votes, total=len(predictions), guide=DISPOSAL_GUIDE[final],
         guides=DISPOSAL_GUIDE, confidence=confidence, is_uncertain=is_uncertain,
         is_suspicious=is_suspicious, warnings=warnings, prediction_id=prediction_id,
         image_filename=image_filename,
@@ -527,29 +548,29 @@ def submit_feedback():
         is_correct = int(request.form.get("is_correct", 0))
         actual_category = request.form.get("actual_category", "").strip()
         comment = request.form.get("comment", "").strip()[:500]  # Limit comment length
-        
+
         conn = db.get_db()
-        
+
         # Verify prediction belongs to this user or user is admin
         pred = conn.execute(
             "SELECT user_id FROM predictions WHERE id = ?", (prediction_id,)
         ).fetchone()
-        
+
         if not pred:
             return jsonify({"success": False, "error": "Prediction not found"}), 404
-        
+
         if pred["user_id"] != g.user["id"] and not g.user["is_admin"]:
             return jsonify({"success": False, "error": "Unauthorized"}), 403
-        
+
         # Check if feedback already exists
         existing = conn.execute(
             "SELECT id FROM feedback WHERE prediction_id = ? AND user_id = ?",
             (prediction_id, g.user["id"])
         ).fetchone()
-        
+
         if existing:
             return jsonify({"success": False, "error": "Feedback already submitted"}), 400
-        
+
         # Insert feedback
         conn.execute(
             """INSERT INTO feedback (prediction_id, user_id, is_correct, actual_category, comment)
@@ -557,10 +578,10 @@ def submit_feedback():
             (prediction_id, g.user["id"], is_correct, actual_category or None, comment or None)
         )
         conn.commit()
-        
+
         logger.info(f"Feedback submitted for prediction {prediction_id} by user {g.user['username']}")
         return jsonify({"success": True, "message": "Thank you for your feedback!"})
-        
+
     except ValueError:
         return jsonify({"success": False, "error": "Invalid input"}), 400
     except Exception as e:
@@ -574,18 +595,18 @@ def compare():
     # Load evaluation report if available
     report_path = os.path.join(MODEL_DIR, "evaluation_report.json")
     evaluation_report = None
-    
+
     if os.path.exists(report_path):
         try:
             with open(report_path) as f:
                 evaluation_report = json.load(f)
         except Exception as e:
             logger.warning(f"Could not load evaluation report: {e}")
-    
+
     # Check for available plots
     plots_dir = os.path.join(MODEL_DIR, "plots")
     available_plots = []
-    
+
     if os.path.exists(plots_dir):
         plot_files = [
             'model_comparison.png',
@@ -599,12 +620,12 @@ def compare():
             'decision_tree_importance.png',
             'random_forest_importance.png',
         ]
-        
+
         for plot in plot_files:
             if os.path.exists(os.path.join(plots_dir, plot)):
                 available_plots.append(plot)
-    
-    return render_template("compare.html", 
+
+    return render_template("compare.html",
                          metrics=METRICS,
                          evaluation_report=evaluation_report,
                          available_plots=available_plots)
@@ -632,10 +653,10 @@ def admin():
         "SELECT COUNT(*) FROM feedback WHERE is_correct = 1"
     ).fetchone()[0]
     incorrect_feedback = total_feedback - correct_feedback
-    
+
     # Calculate real accuracy based on feedback
     real_accuracy = round((correct_feedback / total_feedback * 100), 2) if total_feedback > 0 else None
-    
+
     # Uncertain predictions count
     uncertain_count = conn.execute(
         "SELECT COUNT(*) FROM predictions WHERE is_uncertain = 1"
@@ -680,7 +701,7 @@ def admin():
            FROM users u LEFT JOIN predictions p ON p.user_id = u.id
            GROUP BY u.id ORDER BY u.id DESC LIMIT 100"""
     ).fetchall()
-    
+
     # Recent feedback with details
     recent_feedback = conn.execute(
         """SELECT f.*, p.final_category, p.material_type, u.username, p.confidence
