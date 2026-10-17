@@ -4,19 +4,24 @@ create_admin.py
 Create an admin account, or promote an existing user to admin.
 
 Usage:
-    python create_admin.py <username> <email> [password]
+    python src/create_admin.py <username> <email> [password]
 
 If the password is omitted you will be asked for it (hidden typing).
 If the username already exists, that user is made admin (password unchanged).
 """
 import getpass
+import os
 import sqlite3
 import sys
 
 from werkzeug.security import generate_password_hash
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 from app import app
-import db
+import src.db as db
 
 
 def main():

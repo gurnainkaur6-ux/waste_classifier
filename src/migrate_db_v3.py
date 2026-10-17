@@ -4,13 +4,13 @@ migrate_db_v3.py
 Database migration to add image_filename column for image upload feature.
 
 Usage:
-    python migrate_db_v3.py
+    python src/migrate_db_v3.py
 """
 import os
 import sqlite3
 
 # Get database path
-INSTANCE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance")
+INSTANCE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance")
 DB_PATH = os.path.join(INSTANCE_DIR, "waste.db")
 
 
@@ -20,12 +20,11 @@ def migrate():
         print("Run the app first to create initial database.")
         return
 
-    print(f"🔧 Migrating database for image upload feature...")
+    print("🔧 Migrating database for image upload feature...")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
-        # Add image_filename column to predictions if it doesn't exist
         try:
             cursor.execute("SELECT image_filename FROM predictions LIMIT 1")
             print("✓ Column 'image_filename' already exists")
@@ -49,5 +48,9 @@ def migrate():
         conn.close()
 
 
-if __name__ == "__main__":
+def main():
     migrate()
+
+
+if __name__ == "__main__":
+    main()
