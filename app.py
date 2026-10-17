@@ -57,8 +57,7 @@ INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
-# Render / deployment compatibility: some repos store model files at project root,
-# not inside a dedicated models/ directory.
+# Render / deployment compatibility: some repos keep model files at project root.
 if not os.path.isdir(MODEL_DIR):
     root_model_files = [
         os.path.join(BASE_DIR, "model_comparison.json"),
@@ -132,12 +131,35 @@ CATEGORIES = list(DISPOSAL_GUIDE)
 # ----------------------------------------------------------------------------
 # Models
 # ----------------------------------------------------------------------------
+def get_model_paths():
+    """Return the expected model and metadata file paths."""
+    return {
+        "metrics": os.path.join(MODEL_DIR, "model_comparison.json"),
+        "models": {
+            name: os.path.join(MODEL_DIR, name.lower().replace(" ", "_") + ".joblib")
+            for name in MODEL_NAMES
+        },
+    }
+
+
+def load_metrics():
+    """Load model comparison metrics without crashing if missing."""
+    path = get_model_paths()["metrics"]
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning("Could not read model comparison data: %s", e)
+    logger.warning("Model comparison metadata not found at %s. Using empty metrics.", path)
+    return {}
+
+
 def load_models():
     """Load all trained models with validation."""
     models = {}
     logger.info("Loading ML models from %s...", MODEL_DIR)
-    for name in MODEL_NAMES:
-        path = os.path.join(MODEL_DIR, name.lower().replace(" ", "_") + ".joblib")
+    for name, path in get_model_paths()["models"].items():
         if not os.path.exists(path):
             logger.error(f"Model not found: {path}")
             raise FileNotFoundError(
@@ -154,6 +176,8 @@ def load_models():
 
 def validate_models():
     """Health check: ensure models can make predictions."""
+    if not MODELS:
+        return
     test_input = pd.DataFrame([{
         "material_type": "plastic",
         "wet_or_dry": "dry",
@@ -163,33 +187,41 @@ def validate_models():
 
     for name, model in MODELS.items():
         try:
-            pred = model.predict(test_input)
-            proba = model.predict_proba(test_input)
+            model.predict(test_input)
+            model.predict_proba(test_input)
             logger.info(f"✓ {name} health check passed")
         except Exception as e:
             logger.error(f"✗ {name} health check failed: {e}")
             raise
 
 
-model_comparison_path = os.path.join(MODEL_DIR, "model_comparison.json")
-if os.path.exists(model_comparison_path):
-    with open(model_comparison_path) as _f:
-        METRICS = json.load(_f)
-else:
-    logger.warning("Model comparison metadata not found at %s. Starting with empty metrics.", model_comparison_path)
-    METRICS = {}
+METRICS = load_metrics()
+MODELS = {}
 
-MODELS = load_models()
-
-# Validate models on startup
 try:
+    MODELS = load_models()
     validate_models()
     logger.info("All models validated successfully!")
 except Exception as e:
     logger.critical(f"Model validation failed: {e}")
-    # Don't crash in production, but log prominently
     if os.environ.get("FLASK_DEBUG") == "1":
         raise
+
+
+def ensure_models_ready():
+    """Initialize models on first use if they were not available at startup."""
+    global MODELS, METRICS
+    if MODELS:
+        return True
+    try:
+        MODELS = load_models()
+        validate_models()
+        METRICS = load_metrics()
+        logger.info("Models loaded lazily after startup failure.")
+        return True
+    except Exception as e:
+        logger.critical("Lazy model load failed: %s", e)
+        return False
 
 
 def get_confidence_score(model_predictions_proba):
@@ -353,6 +385,24 @@ USERNAME_RE = re.compile(r"^[A-Za-z0-9_.-]{3,30}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
+@app.route("/health")
+def health():
+    """Simple health check for Render and deployment monitoring."""
+    status = {
+        "ok": True,
+        "models_loaded": bool(MODELS),
+        "metrics_loaded": bool(METRICS),
+        "database_ok": True,
+    }
+    try:
+        db.get_db().execute("SELECT 1").fetchone()
+    except Exception as e:
+        status["database_ok"] = False
+        status["ok"] = False
+        status["database_error"] = str(e)
+    return jsonify(status)
+
+
 @app.route("/signup", methods=["GET", "POST"])
 @limiter.limit("5 per hour")  # Prevent signup spam
 def signup():
@@ -439,6 +489,8 @@ def validate(form):
 @app.route("/")
 @login_required
 def index():
+    if not ensure_models_ready():
+        return "ML models are unavailable. Please try again later.", 503
     return render_template("index.html", options=OPTIONS, error=None, selected={}, supports_image=True)
 
 
@@ -446,6 +498,9 @@ def index():
 @login_required
 @limiter.limit("30 per minute")  # Prevent prediction spam
 def predict():
+    if not ensure_models_ready():
+        return "ML models are unavailable. Please try again later.", 503
+
     # Handle image upload
     image_filename = None
     if 'waste_image' in request.files:
@@ -592,6 +647,9 @@ def submit_feedback():
 @app.route("/compare")
 def compare():
     """Model comparison page with advanced metrics and visualizations."""
+    if not ensure_models_ready():
+        return "Model comparison is unavailable because the ML models failed to load.", 503
+
     # Load evaluation report if available
     report_path = os.path.join(MODEL_DIR, "evaluation_report.json")
     evaluation_report = None
@@ -626,9 +684,9 @@ def compare():
                 available_plots.append(plot)
 
     return render_template("compare.html",
-                         metrics=METRICS,
-                         evaluation_report=evaluation_report,
-                         available_plots=available_plots)
+                          metrics=METRICS,
+                          evaluation_report=evaluation_report,
+                          available_plots=available_plots)
 
 
 # ----------------------------------------------------------------------------
