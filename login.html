@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Login - Smart Waste Classifier{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="eco-card p-4">
+      <h2 class="h4 mb-1">Welcome back</h2>
+      <p class="text-secondary">Log in to classify waste and see your history.</p>
+      <form method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="mb-3">
+          <label for="identifier" class="form-label">Username or email</label>
+          <input class="form-control eco-input" id="identifier" name="identifier" autocomplete="username" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input class="form-control eco-input" type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-eco w-100" type="submit">Log in</button>
+      </form>
+      <p class="text-secondary small mt-3 mb-0">New here? <a href="{{ url_for('signup') }}" class="eco-link">Create an account</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+{% set active = 1 %}
+{% include "_steps.html" %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="eco-card p-4">
+      <h2 class="h4 mb-1">Enter Waste Features</h2>
+      <p class="text-secondary">Describe the waste item and four ML models will classify it.</p>
+
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('predict') }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        
+        {% if supports_image %}
+        {# Image Upload Section #}
+        <div class="mb-4 p-3 border rounded" style="background: var(--card-bg-secondary);">
+          <label class="form-label fw-bold">📸 Upload Image (Optional)</label>
+          <input type="file" class="form-control eco-input" id="waste_image" name="waste_image" 
+                 accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                 onchange="previewImage(event)">
+          <div class="form-text">Supported: PNG, JPG, GIF, WebP (Max 5MB)</div>
+          
+          {# Image Preview #}
+          <div id="imagePreview" class="mt-3" style="display: none;">
+            <img id="preview" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+            <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImage()">Remove Image</button>
+          </div>
+        </div>
+        {% endif %}
+        
+        {% set labels = {
+          "material_type": "Material type",
+          "wet_or_dry": "Wet or dry",
+          "texture": "Texture",
+          "biodegradable": "Biodegradable"
+        } %}
+        {% for field, choices in options.items() %}
+          <div class="mb-3">
+            <label for="{{ field }}" class="form-label">{{ labels[field] }}</label>
+            <select class="form-select eco-input" id="{{ field }}" name="{{ field }}" required>
+              <option value="" disabled {% if not selected.get(field) %}selected{% endif %}>Select...</option>
+              {% for c in choices %}
+                <option value="{{ c }}" {% if selected.get(field) == c %}selected{% endif %}>{{ c|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-eco w-100 mt-2">Classify Waste →</button>
+      </form>
+      
+      <script>
+      function previewImage(event) {
+          const file = event.target.files[0];
+          if (file) {
+              if (file.size > 5 * 1024 * 1024) {
+                  alert('File size must be less than 5MB');
+                  event.target.value = '';
+                  return;
+              }
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                  document.getElementById('preview').src = e.target.result;
+                  document.getElementById('imagePreview').style.display = 'block';
+              };
+              reader.readAsDataURL(file);
+          }
+      }
+      
+      function removeImage() {
+          document.getElementById('waste_image').value = '';
+          document.getElementById('imagePreview').style.display = 'none';
+          document.getElementById('preview').src = '';
+      }
+      </script>
+    </div>
+  </div>
+</div>
+{% endblock %}

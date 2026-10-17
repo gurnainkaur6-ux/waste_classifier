@@ -1,0 +1,11 @@
+{# 4-step progress indicator. Pass `active` (1-4) before including. #}
+<div class="steps mb-4">
+  {% set labels = ["Enter Features", "Run ML Models", "Prediction", "Disposal Guide"] %}
+  {% for label in labels %}
+    {% set n = loop.index %}
+    <div class="step {% if n < active %}done{% elif n == active %}active{% endif %}">
+      <div class="step-circle">{% if n < active %}✓{% else %}{{ n }}{% endif %}</div>
+      <div class="step-label">{{ label }}</div>
+    </div>
+  {% endfor %}
+</div>

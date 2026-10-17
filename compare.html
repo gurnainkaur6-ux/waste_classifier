@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %}Model Comparison - Smart Waste Classifier{% endblock %}
+{% block content %}
+<h2 class="h4 mb-1">🔬 Model Evaluation & Comparison</h2>
+<p class="text-secondary">Comprehensive ML metrics, baselines, and visualizations.</p>
+
+<!-- Quick Stats -->
+{% if evaluation_report %}
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="eco-card p-3">
+      <small class="text-secondary">Dataset Size</small>
+      <h4 class="mb-0">{{ evaluation_report.dataset_info.total_samples }}</h4>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="eco-card p-3">
+      <small class="text-secondary">Test Samples</small>
+      <h4 class="mb-0">{{ evaluation_report.dataset_info.test_samples }}</h4>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="eco-card p-3">
+      <small class="text-secondary">Features</small>
+      <h4 class="mb-0">{{ evaluation_report.dataset_info.n_features }}</h4>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="eco-card p-3">
+      <small class="text-secondary">Classes</small>
+      <h4 class="mb-0">{{ evaluation_report.dataset_info.n_classes }}</h4>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Visualization Tabs -->
+<ul class="nav nav-tabs mb-3" id="metricsTabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="overview-tab" data-bs-toggle="tab" href="#overview" role="tab">Overview</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="baselines-tab" data-bs-toggle="tab" href="#baselines" role="tab">Baselines</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="confusion-tab" data-bs-toggle="tab" href="#confusion" role="tab">Confusion Matrices</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="learning-tab" data-bs-toggle="tab" href="#learning" role="tab">Learning Curves</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="importance-tab" data-bs-toggle="tab" href="#importance" role="tab">Feature Importance</a>
+  </li>
+</ul>
+
+<div class="tab-content" id="metricsTabContent">
+  <!-- Overview Tab -->
+  <div class="tab-pane fade show active" id="overview" role="tabpanel">
+    <div class="eco-card p-4 mb-4">
+      <h5 class="mb-3">Model Performance Comparison</h5>
+      <canvas id="accChart" height="110"></canvas>
+    </div>
+
+    <!-- Detailed Metrics Table -->
+    <div class="eco-card p-4 mb-4 table-responsive">
+      <h5 class="mb-3">Detailed Metrics</h5>
+      <table class="table table-borderless eco-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Test Accuracy</th>
+            <th>CV Mean</th>
+            <th>CV Std</th>
+            <th>95% CI</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for name, m in metrics.items() %}
+          <tr>
+            <td><strong>{{ name }}</strong></td>
+            <td>{{ "%.2f"|format(m.accuracy * 100) if 'accuracy' in m else "%.2f"|format(m.test_accuracy * 100) }}%</td>
+            <td>{{ "%.2f"|format(m.cv_mean * 100) if 'cv_mean' in m else 'N/A' }}%</td>
+            <td>{{ "%.3f"|format(m.cv_std) if 'cv_std' in m else 'N/A' }}</td>
+            <td>
+              {% if 'ci_95_low' in m and 'ci_95_high' in m %}
+              [{{ "%.3f"|format(m.ci_95_low) }}, {{ "%.3f"|format(m.ci_95_high) }}]
+              {% else %}
+              N/A
+              {% endif %}
+            </td>
+            <td>{{ "%.2f"|format(m.precision * 100) }}%</td>
+            <td>{{ "%.2f"|format(m.recall * 100) }}%</td>
+            <td>{{ "%.2f"|format(m.f1 * 100) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if available_plots and 'model_comparison.png' in available_plots %}
+    <div class="eco-card p-4 mb-4">
+      <h5 class="mb-3">Performance Comparison (with Error Bars)</h5>
+      <img src="{{ url_for('serve_plot', filename='model_comparison.png') }}" class="img-fluid" alt="Model Comparison">
+    </div>
+    {% endif %}
+
+    {% if available_plots and 'cv_comparison.png' in available_plots %}
+    <div class="eco-card p-4 mb-4">
+      <h5 class="mb-3">Cross-Validation Score Distribution</h5>
+      <img src="{{ url_for('serve_plot', filename='cv_comparison.png') }}" class="img-fluid" alt="CV Comparison">
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Baselines Tab -->
+  <div class="tab-pane fade" id="baselines" role="tabpanel">
+    {% if evaluation_report and 'baselines' in evaluation_report %}
+    <div class="eco-card p-4 mb-4">
+      <h5 class="mb-3">📊 Baseline Comparisons</h5>
+      <p class="text-secondary mb-4">
+        Baselines help understand if the ML models are actually learning useful patterns 
+        or just memorizing simple rules. If ML models don't beat these baselines, 
+        there's a problem.
+      </p>
+
+      <table class="table table-borderless eco-table align-middle">
+        <thead>
+          <tr>
+            <th>Baseline</th>
+            <th>Test Accuracy</th>
+            <th>CV Mean ± Std</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for name, metrics in evaluation_report.baselines.items() %}
+          <tr>
+            <td><strong>{{ name }}</strong></td>
+            <td>{{ "%.2f"|format(metrics.test_accuracy * 100) }}%</td>
+            <td>{{ "%.2f"|format(metrics.cv_mean * 100) }}% ± {{ "%.3f"|format(metrics.cv_std) }}</td>
+            <td><small class="text-secondary">{{ metrics.description }}</small></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="alert alert-info mt-4">
+        <strong>💡 Key Insight:</strong> If "Material Type Only" achieves nearly the same accuracy as 
+        the full models, it means other features (texture, wet/dry, biodegradable) contribute little. 
+        This is expected in synthetic rule-based data.
+      </div>
+    </div>
+    {% else %}
+    <div class="eco-card p-4">
+      <p class="text-secondary mb-0">
+        Baseline comparisons not available. Run <code>python train_advanced.py</code> 
+        to generate comprehensive evaluation metrics.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Confusion Matrices Tab -->
+  <div class="tab-pane fade" id="confusion" role="tabpanel">
+    <div class="row">
+      {% for model_name in ['decision_tree', 'random_forest', 'svm', 'naive_bayes'] %}
+      {% set filename = model_name + '_confusion.png' %}
+      {% if filename in available_plots %}
+      <div class="col-md-6 mb-4">
+        <div class="eco-card p-3">
+          <h6 class="mb-3">{{ model_name.replace('_', ' ').title() }}</h6>
+          <img src="{{ url_for('serve_plot', filename=filename) }}" class="img-fluid" alt="{{ model_name }} confusion matrix">
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if not available_plots or not any('confusion' in p for p in available_plots) %}
+    <div class="eco-card p-4">
+      <p class="text-secondary mb-0">
+        Confusion matrices not available. Run <code>python train_advanced.py</code> 
+        to generate visualizations.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Learning Curves Tab -->
+  <div class="tab-pane fade" id="learning" role="tabpanel">
+    <div class="eco-card p-4 mb-4">
+      <h5 class="mb-3">📈 Learning Curves</h5>
+      <p class="text-secondary">
+        Learning curves show how model performance changes with training set size. 
+        A large gap between training and validation scores indicates overfitting.
+      </p>
+    </div>
+
+    <div class="row">
+      {% for model_name in ['decision_tree', 'random_forest', 'svm', 'naive_bayes'] %}
+      {% set filename = model_name + '_learning_curve.png' %}
+      {% if filename in available_plots %}
+      <div class="col-md-6 mb-4">
+        <div class="eco-card p-3">
+          <h6 class="mb-3">{{ model_name.replace('_', ' ').title() }}</h6>
+          <img src="{{ url_for('serve_plot', filename=filename) }}" class="img-fluid" alt="{{ model_name }} learning curve">
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if not available_plots or not any('learning_curve' in p for p in available_plots) %}
+    <div class="eco-card p-4">
+      <p class="text-secondary mb-0">
+        Learning curves not available. Run <code>python train_advanced.py</code> 
+        to generate visualizations.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Feature Importance Tab -->
+  <div class="tab-pane fade" id="importance" role="tabpanel">
+    <div class="eco-card p-4 mb-4">
+      <h5 class="mb-3">🎯 Feature Importance Analysis</h5>
+      <p class="text-secondary">
+        Shows which features the models rely on most for making predictions. 
+        If one feature dominates, the problem may be too simple or the data synthetic.
+      </p>
+    </div>
+
+    <div class="row">
+      {% for model_name in ['decision_tree', 'random_forest'] %}
+      {% set filename = model_name + '_importance.png' %}
+      {% if filename in available_plots %}
+      <div class="col-md-6 mb-4">
+        <div class="eco-card p-3">
+          <h6 class="mb-3">{{ model_name.replace('_', ' ').title() }}</h6>
+          <img src="{{ url_for('serve_plot', filename=filename) }}" class="img-fluid" alt="{{ model_name }} feature importance">
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if not available_plots or not any('importance' in p for p in available_plots) %}
+    <div class="eco-card p-4">
+      <p class="text-secondary mb-0">
+        Feature importance plots not available. Run <code>python train_advanced.py</code> 
+        to generate visualizations.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Model Explanations -->
+<div class="eco-card p-4 mt-4">
+  <h5 class="mb-3">🤖 What Each Model Does</h5>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <strong>Decision Tree:</strong>
+      <p class="text-secondary mb-0">Classifies waste using a flowchart-like series of yes/no questions based on features.</p>
+    </div>
+    <div class="col-md-6 mb-3">
+      <strong>Random Forest:</strong>
+      <p class="text-secondary mb-0">Combines predictions from many decision trees (ensemble method) for better stability.</p>
+    </div>
+    <div class="col-md-6 mb-3">
+      <strong>SVM (Support Vector Machine):</strong>
+      <p class="text-secondary mb-0">Draws optimal boundaries that separate different waste categories in feature space.</p>
+    </div>
+    <div class="col-md-6 mb-3">
+      <strong>Naive Bayes:</strong>
+      <p class="text-secondary mb-0">Uses probability theory to predict the most likely category given the input features.</p>
+    </div>
+  </div>
+</div>
+
+<!-- About This Evaluation -->
+<div class="eco-card p-4 mt-4">
+  <h5 class="mb-3">ℹ️ About This Evaluation</h5>
+  <ul class="mb-0">
+    <li><strong>Test Accuracy:</strong> Performance on the held-out 20% test set</li>
+    <li><strong>CV Mean:</strong> Average accuracy from 5-fold cross-validation (more reliable than single test score)</li>
+    <li><strong>CV Std:</strong> Standard deviation of CV scores (lower = more stable)</li>
+    <li><strong>95% CI:</strong> Confidence interval for test accuracy (accounting for test set size)</li>
+    <li><strong>Confusion Matrix:</strong> Shows which categories the model confuses with each other</li>
+    <li><strong>Learning Curve:</strong> Shows if the model would benefit from more training data</li>
+  </ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  // Data passed from Flask as JSON
+  const metrics = {{ metrics|tojson }};
+  const names = Object.keys(metrics);
+  const accuracy = names.map(n => {
+    const m = metrics[n];
+    return +((m.accuracy || m.test_accuracy) * 100).toFixed(2);
+  });
+</script>
+<script src="{{ url_for('static', filename='js/compare.js') }}"></script>
+{% endblock %}

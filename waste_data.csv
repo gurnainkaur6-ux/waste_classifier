@@ -1,0 +1,401 @@
+material_type,wet_or_dry,texture,biodegradable,category
+food,wet,soft,yes,Organic
+plastic,dry,hard,no,Recyclable
+paper,dry,smooth,yes,Paper
+paper,dry,soft,yes,Paper
+vegetable,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+e-waste,dry,hard,no,General Waste
+plastic,dry,smooth,no,Recyclable
+cardboard,dry,flexible,yes,Paper
+plastic,dry,flexible,no,Recyclable
+glass,dry,smooth,no,Recyclable
+metal,dry,hard,no,Metal
+plastic,dry,hard,no,Recyclable
+glass,dry,smooth,no,Recyclable
+food,wet,soft,yes,Organic
+food,dry,smooth,yes,Organic
+paper,wet,rough,yes,Paper
+food,wet,soft,yes,Organic
+textile,dry,rough,no,General Waste
+plastic,dry,flexible,no,Recyclable
+textile,dry,soft,no,General Waste
+vegetable,wet,soft,yes,Organic
+cardboard,dry,rough,yes,Paper
+glass,dry,smooth,no,Recyclable
+other,dry,rough,no,General Waste
+paper,dry,smooth,yes,Paper
+plastic,dry,flexible,no,Recyclable
+plastic,dry,hard,no,Recyclable
+e-waste,dry,hard,no,General Waste
+food,wet,smooth,yes,Organic
+textile,dry,soft,no,General Waste
+vegetable,wet,soft,yes,Organic
+metal,dry,smooth,no,Metal
+other,dry,hard,no,General Waste
+cardboard,dry,rough,yes,Paper
+food,wet,soft,yes,Organic
+textile,dry,soft,no,General Waste
+food,wet,soft,yes,Organic
+e-waste,dry,hard,no,General Waste
+food,dry,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+plastic,dry,smooth,no,Recyclable
+paper,dry,soft,yes,Paper
+paper,dry,smooth,yes,Paper
+plastic,dry,smooth,no,Recyclable
+paper,dry,smooth,yes,Paper
+plastic,dry,smooth,no,Recyclable
+paper,dry,smooth,yes,Paper
+food,wet,soft,yes,Organic
+cardboard,dry,rough,yes,Paper
+cardboard,dry,rough,yes,Paper
+glass,dry,smooth,no,Recyclable
+paper,dry,smooth,yes,Paper
+other,dry,flexible,no,General Waste
+food,wet,rough,yes,Organic
+food,dry,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+vegetable,wet,rough,yes,Organic
+glass,dry,hard,no,Recyclable
+cardboard,wet,rough,yes,Paper
+other,wet,rough,no,General Waste
+food,dry,soft,yes,Organic
+food,wet,smooth,yes,Organic
+vegetable,wet,smooth,yes,Organic
+e-waste,dry,hard,no,General Waste
+textile,dry,soft,no,General Waste
+paper,dry,smooth,yes,Paper
+plastic,dry,smooth,no,Recyclable
+paper,dry,smooth,yes,Paper
+paper,dry,smooth,yes,Paper
+glass,dry,smooth,no,Recyclable
+other,dry,soft,no,General Waste
+e-waste,dry,hard,no,General Waste
+paper,dry,smooth,yes,Paper
+food,dry,soft,yes,Organic
+cardboard,dry,rough,yes,Paper
+e-waste,dry,hard,no,General Waste
+metal,dry,hard,no,Metal
+paper,dry,soft,yes,Paper
+paper,dry,smooth,yes,Paper
+food,wet,soft,yes,Organic
+paper,wet,rough,yes,Paper
+food,wet,soft,yes,Organic
+e-waste,dry,hard,no,General Waste
+cardboard,dry,rough,yes,Paper
+glass,dry,hard,no,Recyclable
+other,dry,soft,no,General Waste
+metal,dry,hard,no,Metal
+plastic,dry,smooth,no,Recyclable
+plastic,dry,flexible,no,Recyclable
+plastic,wet,smooth,no,Recyclable
+food,wet,soft,yes,Organic
+textile,dry,soft,no,General Waste
+cardboard,dry,rough,yes,Paper
+plastic,dry,smooth,no,Recyclable
+cardboard,dry,rough,yes,Paper
+other,wet,rough,no,General Waste
+metal,dry,smooth,no,Metal
+other,dry,smooth,no,General Waste
+e-waste,dry,hard,no,General Waste
+plastic,dry,smooth,no,Recyclable
+vegetable,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+metal,dry,rough,no,Metal
+paper,dry,soft,yes,Paper
+food,wet,soft,yes,Organic
+plastic,dry,flexible,no,Recyclable
+cardboard,dry,rough,yes,Paper
+metal,dry,hard,no,Metal
+other,dry,rough,no,General Waste
+e-waste,dry,hard,no,General Waste
+paper,dry,smooth,yes,Paper
+metal,dry,hard,no,Metal
+glass,dry,smooth,no,Recyclable
+e-waste,dry,hard,no,General Waste
+e-waste,dry,hard,no,General Waste
+paper,wet,smooth,yes,Paper
+food,wet,smooth,yes,Organic
+food,dry,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+textile,dry,flexible,no,General Waste
+metal,dry,hard,no,Metal
+textile,dry,flexible,no,General Waste
+metal,dry,rough,no,Metal
+plastic,dry,smooth,no,Recyclable
+paper,dry,soft,yes,Paper
+plastic,dry,smooth,no,Recyclable
+other,wet,soft,no,General Waste
+e-waste,dry,hard,no,General Waste
+textile,dry,soft,no,General Waste
+paper,dry,smooth,yes,Paper
+plastic,dry,smooth,no,Recyclable
+e-waste,dry,smooth,no,General Waste
+other,dry,soft,no,General Waste
+plastic,wet,smooth,no,Recyclable
+metal,dry,hard,no,Metal
+plastic,dry,flexible,no,Recyclable
+textile,dry,rough,no,General Waste
+textile,dry,rough,no,General Waste
+plastic,dry,smooth,no,Recyclable
+metal,dry,hard,no,Metal
+food,wet,smooth,yes,Organic
+paper,dry,smooth,yes,Paper
+e-waste,dry,smooth,no,General Waste
+cardboard,dry,rough,yes,Paper
+glass,dry,smooth,no,Recyclable
+metal,dry,hard,no,Metal
+vegetable,wet,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+paper,dry,soft,yes,Paper
+other,dry,soft,yes,General Waste
+food,wet,soft,yes,Organic
+cardboard,wet,rough,yes,Paper
+metal,dry,rough,no,Metal
+plastic,wet,hard,no,Recyclable
+paper,wet,smooth,yes,Paper
+paper,dry,soft,yes,Paper
+food,wet,soft,yes,Organic
+paper,dry,smooth,yes,Paper
+paper,dry,smooth,yes,Paper
+plastic,dry,flexible,no,Recyclable
+food,wet,soft,yes,Organic
+paper,dry,smooth,yes,Paper
+e-waste,dry,hard,no,General Waste
+e-waste,dry,hard,no,General Waste
+plastic,dry,smooth,no,Recyclable
+paper,dry,soft,yes,Paper
+vegetable,wet,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+plastic,dry,hard,no,Recyclable
+other,wet,rough,no,General Waste
+food,wet,smooth,yes,Organic
+metal,dry,hard,no,Metal
+textile,dry,soft,no,General Waste
+textile,dry,soft,no,General Waste
+glass,dry,hard,no,Recyclable
+plastic,wet,smooth,no,Recyclable
+cardboard,wet,rough,yes,Paper
+cardboard,dry,rough,yes,Paper
+metal,dry,rough,no,Metal
+vegetable,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+other,dry,rough,no,General Waste
+plastic,dry,flexible,no,Recyclable
+cardboard,dry,rough,yes,Paper
+paper,dry,soft,yes,Paper
+e-waste,dry,smooth,no,General Waste
+paper,wet,smooth,yes,Paper
+glass,dry,hard,no,Recyclable
+metal,dry,hard,no,Metal
+cardboard,dry,rough,yes,Paper
+paper,dry,smooth,yes,Paper
+paper,wet,smooth,yes,Paper
+other,dry,soft,no,General Waste
+metal,dry,rough,no,Metal
+e-waste,dry,hard,no,General Waste
+food,dry,smooth,yes,Organic
+plastic,dry,smooth,no,Recyclable
+other,dry,rough,no,General Waste
+textile,dry,soft,yes,General Waste
+other,wet,rough,no,General Waste
+other,dry,hard,no,General Waste
+e-waste,dry,hard,no,General Waste
+glass,dry,smooth,no,Recyclable
+metal,dry,hard,no,Metal
+glass,dry,smooth,no,Recyclable
+cardboard,dry,hard,yes,Paper
+plastic,dry,smooth,no,Recyclable
+cardboard,dry,rough,yes,Paper
+other,dry,rough,no,General Waste
+paper,dry,smooth,yes,Paper
+textile,dry,rough,no,General Waste
+metal,dry,hard,no,Metal
+cardboard,wet,rough,yes,Paper
+other,dry,rough,no,General Waste
+other,dry,rough,no,General Waste
+food,wet,soft,yes,Organic
+vegetable,wet,rough,yes,Organic
+glass,dry,smooth,no,Recyclable
+paper,dry,smooth,yes,Paper
+other,wet,rough,no,General Waste
+food,wet,smooth,yes,Organic
+food,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+plastic,dry,smooth,no,Recyclable
+food,wet,rough,yes,Organic
+metal,dry,hard,no,Metal
+e-waste,dry,hard,no,General Waste
+glass,dry,smooth,no,Recyclable
+other,dry,rough,no,General Waste
+plastic,wet,smooth,no,Recyclable
+glass,dry,smooth,no,Recyclable
+food,wet,soft,yes,Organic
+vegetable,wet,smooth,yes,Organic
+paper,dry,smooth,yes,Paper
+plastic,dry,smooth,no,Recyclable
+e-waste,dry,hard,no,General Waste
+paper,dry,smooth,yes,Paper
+food,wet,soft,yes,Organic
+food,wet,smooth,yes,Organic
+cardboard,dry,flexible,yes,Paper
+food,wet,soft,yes,Organic
+metal,dry,hard,no,Metal
+other,wet,flexible,no,General Waste
+glass,dry,smooth,no,Recyclable
+vegetable,wet,soft,yes,Organic
+paper,dry,rough,yes,Paper
+cardboard,dry,flexible,yes,Paper
+vegetable,wet,soft,yes,Organic
+paper,dry,soft,yes,Paper
+paper,dry,smooth,yes,Paper
+vegetable,wet,soft,yes,Organic
+plastic,dry,smooth,no,Recyclable
+metal,dry,hard,no,Metal
+other,dry,rough,no,General Waste
+other,dry,hard,no,General Waste
+plastic,dry,smooth,no,Recyclable
+glass,dry,smooth,no,Recyclable
+paper,dry,soft,yes,Paper
+other,dry,rough,no,General Waste
+e-waste,dry,hard,no,General Waste
+e-waste,dry,smooth,no,General Waste
+cardboard,dry,rough,yes,Paper
+glass,dry,smooth,no,Recyclable
+textile,dry,soft,yes,General Waste
+vegetable,wet,soft,yes,Organic
+food,wet,soft,yes,Organic
+other,dry,rough,no,General Waste
+food,dry,soft,yes,Organic
+plastic,dry,smooth,no,Recyclable
+textile,dry,soft,no,General Waste
+paper,dry,smooth,yes,Paper
+vegetable,wet,soft,yes,Organic
+other,dry,hard,yes,General Waste
+plastic,dry,flexible,no,Recyclable
+plastic,dry,smooth,no,Recyclable
+plastic,dry,smooth,no,Recyclable
+food,wet,rough,yes,Organic
+paper,dry,smooth,yes,Paper
+food,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+food,wet,soft,yes,Organic
+paper,dry,smooth,yes,Paper
+metal,dry,hard,no,Metal
+e-waste,dry,hard,no,General Waste
+e-waste,dry,hard,no,General Waste
+plastic,wet,hard,no,Recyclable
+cardboard,dry,rough,yes,Paper
+paper,dry,soft,yes,Paper
+plastic,dry,smooth,no,Recyclable
+textile,dry,soft,yes,General Waste
+food,wet,soft,yes,Organic
+paper,dry,rough,yes,Paper
+vegetable,wet,soft,yes,Organic
+food,wet,soft,yes,Organic
+cardboard,dry,rough,yes,Paper
+plastic,dry,smooth,no,Recyclable
+plastic,dry,smooth,no,Recyclable
+e-waste,dry,hard,no,General Waste
+e-waste,dry,hard,no,General Waste
+food,wet,soft,yes,Organic
+textile,dry,soft,no,General Waste
+food,wet,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+plastic,dry,hard,no,Recyclable
+paper,dry,smooth,yes,Paper
+e-waste,dry,hard,no,General Waste
+textile,dry,soft,no,General Waste
+e-waste,dry,hard,no,General Waste
+e-waste,dry,smooth,no,General Waste
+glass,dry,smooth,no,Recyclable
+paper,dry,smooth,yes,Paper
+plastic,dry,hard,no,Recyclable
+textile,dry,flexible,no,General Waste
+e-waste,dry,hard,no,General Waste
+cardboard,dry,hard,yes,Paper
+food,dry,soft,yes,Organic
+glass,dry,smooth,no,Recyclable
+other,dry,hard,no,General Waste
+e-waste,dry,hard,no,General Waste
+other,dry,rough,no,General Waste
+textile,dry,soft,yes,General Waste
+e-waste,dry,hard,no,General Waste
+plastic,wet,flexible,no,Recyclable
+vegetable,wet,soft,yes,Organic
+paper,wet,smooth,yes,Paper
+other,wet,rough,no,General Waste
+textile,dry,soft,no,General Waste
+e-waste,dry,hard,no,General Waste
+textile,dry,soft,no,General Waste
+paper,dry,rough,yes,Paper
+textile,dry,soft,no,General Waste
+plastic,dry,smooth,no,Recyclable
+e-waste,dry,hard,no,General Waste
+e-waste,dry,smooth,no,General Waste
+paper,wet,smooth,yes,Paper
+textile,dry,flexible,no,General Waste
+metal,dry,hard,no,Metal
+paper,dry,soft,yes,Paper
+textile,dry,soft,no,General Waste
+paper,dry,soft,yes,Paper
+plastic,dry,smooth,no,Recyclable
+glass,dry,smooth,no,Recyclable
+paper,wet,smooth,yes,Paper
+e-waste,dry,hard,no,General Waste
+other,dry,soft,yes,General Waste
+paper,dry,soft,yes,Paper
+food,wet,soft,yes,Organic
+cardboard,dry,rough,yes,Paper
+other,dry,smooth,yes,General Waste
+metal,dry,hard,no,Metal
+other,dry,rough,no,General Waste
+plastic,dry,smooth,no,Recyclable
+other,wet,rough,no,General Waste
+glass,dry,hard,no,Recyclable
+other,dry,flexible,no,General Waste
+paper,dry,smooth,yes,Paper
+plastic,dry,hard,no,Recyclable
+cardboard,dry,flexible,yes,Paper
+vegetable,wet,soft,yes,Organic
+paper,wet,smooth,yes,Paper
+food,wet,soft,yes,Organic
+metal,dry,hard,no,Metal
+cardboard,dry,hard,yes,Paper
+food,wet,soft,yes,Organic
+paper,dry,smooth,yes,Paper
+vegetable,wet,soft,yes,Organic
+plastic,wet,hard,no,Recyclable
+other,wet,soft,no,General Waste
+metal,dry,rough,no,Metal
+vegetable,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+vegetable,wet,soft,yes,Organic
+cardboard,dry,rough,yes,Paper
+plastic,wet,smooth,no,Recyclable
+vegetable,wet,rough,yes,Organic
+paper,dry,soft,yes,Paper
+paper,wet,smooth,yes,Paper
+e-waste,dry,hard,no,General Waste
+vegetable,wet,soft,yes,Organic
+paper,dry,smooth,yes,Paper
+paper,wet,smooth,yes,Paper
+cardboard,dry,hard,yes,Paper
+cardboard,dry,rough,yes,Paper
+paper,wet,soft,yes,Paper
+plastic,dry,smooth,no,Recyclable
+cardboard,dry,rough,yes,Paper
+other,dry,rough,no,General Waste
+vegetable,wet,soft,yes,Organic
+e-waste,dry,hard,no,General Waste
+food,wet,soft,yes,Organic
+paper,wet,soft,yes,Paper
+food,wet,soft,yes,Organic
+plastic,dry,smooth,no,Recyclable
+paper,dry,soft,yes,Paper
+cardboard,dry,rough,yes,Paper
+food,wet,soft,yes,Organic
+food,wet,rough,yes,Organic
+metal,dry,hard,no,Metal
